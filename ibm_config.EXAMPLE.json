@@ -1,0 +1,23 @@
+{
+  "_comment": "IBM Quantum Credentials Configuration",
+  "_instructions": "1. Copy this file to ibm_config.json, 2. Fill in your credentials, 3. Add ibm_config.json to .gitignore",
+  "_security_warning": "NEVER commit this file to Git! Keep your credentials private!",
+  
+  "token": "YOUR_IBM_QUANTUM_TOKEN_HERE",
+  "crn": "YOUR_IBM_QUANTUM_CRN_HERE",
+  
+  "_how_to_get_credentials": [
+    "1. Go to https://quantum.ibm.com/",
+    "2. Sign in or create account",
+    "3. Click your profile icon (top right)",
+    "4. Go to 'Account settings'",
+    "5. Copy your API token",
+    "6. For CRN: Go to IBM Cloud dashboard if using IBM Cloud instance"
+  ],
+  
+  "_alternative_method": "Set environment variables instead of using this file:",
+  "_env_vars": [
+    "export IBM_QUANTUM_TOKEN='your_token_here'",
+    "export IBM_QUANTUM_CRN='your_crn_here'"
+  ]
+}

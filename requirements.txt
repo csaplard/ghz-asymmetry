@@ -1,0 +1,26 @@
+# Python Dependencies for GHZ Asymmetry Experiments
+# Author: Daniel Csaplár
+# Paper: Spatially Resolved Decoherence in Multi-Qubit GHZ States
+
+# Core Quantum Computing
+qiskit>=0.45.0
+qiskit-ibm-runtime>=0.15.0
+
+# Scientific Computing
+numpy>=1.21.0
+scipy>=1.7.0
+pandas>=1.3.0
+
+# Visualization
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# Jupyter (for analysis notebooks)
+jupyter>=1.0.0
+notebook>=6.4.0
+
+# Data Export
+openpyxl>=3.0.0  # For Excel export if needed
+
+# Utilities
+python-dotenv>=0.19.0  # For secure credential management
