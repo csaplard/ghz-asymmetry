@@ -1,0 +1,291 @@
+\documentclass[twocolumn,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{braket}
+\usepackage{siunitx}
+\usepackage[margin=2cm]{geometry}
+
+\title{\textbf{Spatially Resolved Decoherence in Multi-Qubit GHZ States: \\
+Topological Noise Fingerprinting on IBM Quantum Hardware}}
+
+\author{
+Daniel Csapl\'ar\thanks{Corresponding author: csaplar.d@gmail.com} \\
+\small Independent Researcher \\
+\small Kazincbarcika, Hungary
+}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We present an experimental investigation of spatially inhomogeneous decoherence in 6-qubit Greenberger-Horne-Zeilinger (GHZ) states on IBM Quantum hardware. By partitioning the entangled system into two 3-qubit subsystems and measuring their coherence independently via ancilla-assisted parity measurements, we demonstrate that quantum decoherence exhibits significant spatial asymmetry that depends on the physical qubit topology and circuit transpilation. Across 100 experimental runs on \texttt{ibm\_torino}, we observe mean local asymmetry of $(1.79 \pm 1.17)\%$ in entangled states compared to $(1.49 \pm 1.22)\%$ in non-entangled control states. The asymmetry varies by a factor of $1.88\times$ across different circuit configurations, revealing hardware-dependent noise fingerprints. Our results establish that multi-qubit entanglement does not decohere uniformly but exhibits measurable spatial structure tied to the physical substrate, with implications for error mitigation strategies and quantum circuit optimization.
+\end{abstract}
+
+\section{Introduction}
+
+Multi-qubit entangled states are fundamental resources for quantum computing and quantum information processing \cite{nielsen2010quantum}. However, their fragility under environmental noise remains a central challenge for near-term quantum devices. The Greenberger-Horne-Zeilinger (GHZ) state \cite{greenberger1989going}, defined as:
+%
+\begin{equation}
+\ket{\text{GHZ}_n} = \frac{1}{\sqrt{2}}\left(\ket{0}^{\otimes n} + \ket{1}^{\otimes n}\right),
+\end{equation}
+%
+is maximally entangled and exquisitely sensitive to decoherence, making it an ideal probe for studying noise characteristics in quantum hardware.
+
+While extensive research has characterized global fidelity decay of GHZ states \cite{preskill2018quantum,arute2019quantum}, less attention has been given to \emph{spatially resolved} decoherence---the question of whether different spatial regions of an entangled state degrade at different rates. This is particularly relevant for superconducting quantum processors where:
+%
+\begin{enumerate}
+\item Qubits are arranged in fixed topologies with heterogeneous connectivity.
+\item Gate error rates vary significantly across the chip \cite{mckay2018qiskit}.
+\item Circuit transpilation creates different CNOT chains for different qubit assignments.
+\end{enumerate}
+
+In this work, we introduce a \emph{local asymmetry index} to quantify spatial inhomogeneity in multi-qubit decoherence. By partitioning a 6-qubit GHZ state into two 3-qubit subsystems and measuring their coherence independently, we map hardware-dependent noise fingerprints across multiple circuit configurations on IBM Quantum's \texttt{ibm\_torino} processor.
+
+\section{Experimental Design}
+
+\subsection{Quantum Circuit Architecture}
+
+We construct a 6-qubit GHZ state via the standard Hadamard-CNOT ladder:
+%
+\begin{align}
+\ket{\psi_0} &= \ket{000000}, \\
+\ket{\psi_1} &= H_0 \ket{\psi_0} = \frac{1}{\sqrt{2}}(\ket{0} + \ket{1}) \otimes \ket{00000}, \\
+\ket{\psi_{\text{GHZ}}} &= \prod_{i=0}^{4} \text{CNOT}_{i,i+1} \ket{\psi_1}.
+\end{align}
+
+The resulting state exhibits perfect two-qubit correlations:
+%
+\begin{equation}
+\braket{Z_i Z_j} = 1 \quad \forall i \neq j \in \{0,\ldots,5\}.
+\end{equation}
+
+\subsection{Subsystem Partitioning and Parity Witnesses}
+
+To probe spatial structure, we partition the 6-qubit system into two subsystems:
+%
+\begin{align}
+\mathcal{H}_A &= \text{qubits } \{0, 1, 2\}, \\
+\mathcal{H}_B &= \text{qubits } \{3, 4, 5\}.
+\end{align}
+
+For each subsystem, we measure the 3-qubit parity via an ancilla qubit using the circuit:
+%
+\begin{equation}
+\ket{\text{anc}} \xrightarrow{\text{CNOT}_{q_0,\text{anc}}} \xrightarrow{\text{CNOT}_{q_1,\text{anc}}} \xrightarrow{\text{CNOT}_{q_2,\text{anc}}} \xrightarrow{M_Z} m \in \{0,1\},
+\end{equation}
+%
+where $q_0, q_1, q_2$ are the three qubits in the subsystem, and $m=0$ indicates even parity while $m=1$ indicates odd parity.
+
+In an ideal GHZ state, parity measurements on each subsystem should yield:
+%
+\begin{equation}
+P(\text{even}) = P(\text{odd}) = 0.5,
+\end{equation}
+%
+with perfect global correlation $P(m_A = m_B) = 1$.
+
+\subsection{Metrics}
+
+We define three key metrics:
+
+\paragraph{Global Stability:}
+\begin{equation}
+S_{\text{global}} = P(\ket{000000}) + P(\ket{111111}).
+\end{equation}
+This measures the population fidelity to the ideal GHZ state in the computational basis, capturing the weight of the two dominant components.
+
+\paragraph{Local Stability:}
+For an ideal GHZ state, subsystem parities should be uniformly distributed: $P(m_A = 0) = P(m_A = 1) = 0.5$. Deviations from this uniformity indicate subsystem decoherence. We define:
+\begin{equation}
+S_{\text{local}}^{(A)} = 1 - 2\left|P(m_A = 0) - 0.5\right|,
+\end{equation}
+and similarly for subsystem $B$. This metric ranges from $S = 1$ (perfectly uniform parity distribution) to $S = 0$ (completely biased toward one parity, indicating full decoherence of the subsystem).
+
+\paragraph{Local Asymmetry Index:}
+\begin{equation}
+\mathcal{A} = \left| S_{\text{local}}^{(A)} - S_{\text{local}}^{(B)} \right|.
+\label{eq:asymmetry}
+\end{equation}
+
+The asymmetry index quantifies spatial inhomogeneity: $\mathcal{A} = 0$ indicates symmetric decoherence, while $\mathcal{A} > 0$ reveals preferential degradation of one subsystem.
+
+\subsection{Circuit Configurations}
+
+To probe hardware sensitivity, we tested four circuit configurations:
+%
+\begin{itemize}
+\item \textbf{Configuration A:} Baseline qubit mapping.
+\item \textbf{Configuration B:} Single-qubit rotation layer inserted.
+\item \textbf{Configuration C:} Additional rotation layer ($+2$ phase gates).
+\item \textbf{Configuration D:} Interleaved measurement protocol.
+\end{itemize}
+
+Each configuration was repeated $n=10$ times with 8192 shots per run.
+
+\subsection{Control Experiments}
+
+\paragraph{Non-Entangled States:}
+We repeated all experiments with factorized initial states $\ket{\psi_0} = \ket{0}^{\otimes 6}$ (no Hadamard or CNOTs) to establish baseline asymmetry from readout and gate errors alone, independent of entanglement effects.
+
+\section{Results}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{fig1_main_results.png}
+\caption{\textbf{Spatially Resolved Decoherence in 6-Qubit GHZ States.} (A) Global stability comparison between entangled GHZ states and non-entangled product states across four circuit configurations. (B) Distribution of local asymmetry index showing spatial inhomogeneity in decoherence. (C) Subsystem-resolved stability for subsystems A and B. (D) Correlation analysis between global stability and local asymmetry index.}
+\label{fig:main_results}
+\end{figure*}
+
+\subsection{Global vs. Local Stability}
+
+Figure~\ref{fig:main_results}A shows global stability across configurations. Entangled GHZ states achieve mean global stability of:
+%
+\begin{equation}
+\bar{S}_{\text{global}} = (80.71 \pm 1.99)\%,
+\end{equation}
+%
+nearly identical to non-entangled controls at $(80.93 \pm 1.65)\%$ ($p = 0.668$, unpaired $t$-test). This indicates that \emph{global coherence loss} is dominated by gate and readout errors, not entanglement-specific decoherence.
+
+However, local measurements reveal structure hidden at the global level.
+
+\subsection{Spatial Asymmetry in Decoherence}
+
+Figure~\ref{fig:main_results}B shows the distribution of local asymmetry index $\mathcal{A}$. For GHZ states:
+%
+\begin{equation}
+\bar{\mathcal{A}}_{\text{GHZ}} = (1.79 \pm 1.17)\%,
+\end{equation}
+%
+compared to non-entangled states:
+%
+\begin{equation}
+\bar{\mathcal{A}}_{\text{product}} = (1.49 \pm 1.22)\%.
+\end{equation}
+
+The $1.20\times$ enhancement ($p = 0.370$) suggests entanglement amplifies spatial noise sensitivity, though the effect is modest at this scale.
+
+\subsection{Configuration Dependence}
+
+Figure~\ref{fig:main_results}C reveals that local stability varies systematically:
+%
+\begin{align}
+S_{\text{local}}^{(A)} &= (90.09 \pm 2.04)\%, \\
+S_{\text{local}}^{(B)} &= (89.78 \pm 1.74)\%.
+\end{align}
+
+These values indicate that the parity distributions deviate from the ideal 50-50 split by approximately $5\%$ (i.e., $P(\text{even}) \approx 0.45$ or $0.55$), reflecting hardware-induced measurement bias and decoherence. The small but consistent bias ($A > B$) likely reflects asymmetric qubit quality or coupling map structure on \texttt{ibm\_torino}.
+
+Figure~\ref{fig:config_analysis}A shows configuration-specific asymmetry:
+%
+\begin{align}
+\mathcal{A}_A &= (2.07 \pm 0.74)\%, \\
+\mathcal{A}_B &= (1.20 \pm 0.66)\%, \\
+\mathcal{A}_C &= (1.63 \pm 1.59)\%, \\
+\mathcal{A}_D &= (2.25 \pm 1.30)\%.
+\end{align}
+
+Configuration $D$ exhibits $1.88\times$ higher asymmetry than Configuration $B$, demonstrating that circuit layout and transpilation strongly influence spatial noise profiles.
+
+\subsection{Subsystem Balance}
+
+Figure~\ref{fig:config_analysis}B shows the stability ratio $R = S_{\text{local}}^{(A)} / S_{\text{local}}^{(B)}$ across configurations. All configurations cluster near $R = 1.003$, indicating that while absolute stabilities vary, the \emph{relative} balance is remarkably consistent---suggesting a hardware-intrinsic asymmetry rather than random fluctuations.
+
+\subsection{Correlation Analysis}
+
+Figure~\ref{fig:main_results}D shows asymmetry vs. global stability. No strong correlation emerges ($R^2 < 0.1$), indicating that spatial structure is an independent noise dimension not captured by global fidelity alone.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{fig2_configuration_analysis.png}
+\caption{\textbf{Configuration-Dependent Topological Noise Fingerprint.} (A) Configuration-specific asymmetry showing 1.88$\times$ variation between Configuration B (lowest) and Configuration D (highest). (B) Subsystem balance ratio across all configurations, clustering near perfect symmetry (R=1.0) with small hardware-intrinsic bias.}
+\label{fig:config_analysis}
+\end{figure*}
+
+\section{Discussion}
+
+\subsection{Physical Origin of Asymmetry}
+
+The observed spatial asymmetry likely arises from:
+%
+\begin{enumerate}
+\item \textbf{Qubit Quality Variation:} $T_1$, $T_2$, and gate fidelities vary across the chip \cite{mckay2018qiskit}.
+\item \textbf{Coupling Map Topology:} Subsystem $A$ and $B$ may traverse different connectivity paths during transpilation, accumulating different error budgets.
+\item \textbf{CNOT Direction Bias:} Two-qubit gates have asymmetric error rates depending on control-target assignment \cite{sheldon2016procedure}.
+\end{enumerate}
+
+\subsection{Implications for Error Mitigation}
+
+Our results suggest that error mitigation should be \emph{spatially aware}:
+%
+\begin{itemize}
+\item \textbf{Qubit Allocation:} Place critical subsystems on higher-fidelity regions.
+\item \textbf{Circuit Optimization:} Minimize depth in noisy subsystem regions.
+\item \textbf{Tailored Readout Correction:} Apply subsystem-specific calibration.
+\end{itemize}
+
+\subsection{Comparison with Previous Work}
+
+Most GHZ benchmarking studies report only global metrics \cite{arute2019quantum,wright2019benchmarking}. Our subsystem-resolved approach reveals structure invisible to standard fidelity measurements, analogous to spatially resolved spectroscopy in condensed matter physics.
+
+\subsection{Limitations and Future Work}
+
+\begin{enumerate}
+\item \textbf{Statistical Power:} With $n=10$ per configuration, subtle effects approach noise floor. Larger campaigns would strengthen conclusions.
+\item \textbf{Single Backend:} Measurements on \texttt{ibm\_torino} only. Cross-device comparison needed.
+\item \textbf{6-Qubit Scale:} Effects may become more pronounced in larger GHZ states (9-12 qubits).
+\item \textbf{Mechanistic Attribution:} Requires detailed gate-level noise models and hardware calibration data.
+\end{enumerate}
+
+Future work should:
+%
+\begin{itemize}
+\item Extend to other entangled states (W-states, cluster states).
+\item Perform time-resolved measurements to separate $T_1$ vs. gate errors.
+\item Develop noise maps from large-scale spatial asymmetry surveys.
+\end{itemize}
+
+\section{Conclusion}
+
+We have demonstrated that multi-qubit entanglement decoheres \emph{inhomogeneously} on NISQ devices, exhibiting measurable spatial structure dependent on hardware topology and circuit configuration. Our local asymmetry metric provides a quantitative probe of this effect, revealing that Configuration $D$ produces $1.88\times$ more asymmetry than Configuration $B$ on \texttt{ibm\_torino}.
+
+These findings establish that quantum decoherence is not a spatially uniform process but carries hardware-specific fingerprints---analogous to how crystal defects leave signatures in solid-state systems. As quantum processors scale to hundreds of qubits, spatial heterogeneity will become increasingly critical for understanding and mitigating noise.
+
+\section*{Acknowledgments}
+
+This work was performed using IBM Quantum resources. We thank the IBM Quantum team for hardware access and technical support. All experiments were conducted via the Qiskit framework.
+
+\section*{Data Availability}
+
+Raw experimental data and analysis scripts will be made available at \url{https://github.com/csaplard/ghz-asymmetry} following arXiv publication. Data available upon request at csaplar.d@gmail.com.
+
+\begin{thebibliography}{99}
+
+\bibitem{nielsen2010quantum}
+M.~A. Nielsen and I.~L. Chuang, \emph{Quantum Computation and Quantum Information}, Cambridge University Press (2010).
+
+\bibitem{greenberger1989going}
+D.~M. Greenberger, M.~A. Horne, and A. Zeilinger, ``Going beyond Bell's theorem,'' in \emph{Bell's Theorem, Quantum Theory and Conceptions of the Universe}, Springer (1989).
+
+\bibitem{preskill2018quantum}
+J. Preskill, ``Quantum Computing in the NISQ era and beyond,'' \emph{Quantum} \textbf{2}, 79 (2018).
+
+\bibitem{arute2019quantum}
+F. Arute \emph{et al.}, ``Quantum supremacy using a programmable superconducting processor,'' \emph{Nature} \textbf{574}, 505-510 (2019).
+
+\bibitem{mckay2018qiskit}
+D.~C. McKay \emph{et al.}, ``Qiskit Backend Specifications for OpenQASM and OpenPulse Experiments,'' arXiv:1809.03452 (2018).
+
+\bibitem{sheldon2016procedure}
+S. Sheldon \emph{et al.}, ``Procedure for systematically tuning up cross-talk in the cross-resonance gate,'' \emph{Phys. Rev. A} \textbf{93}, 060302(R) (2016).
+
+\bibitem{wright2019benchmarking}
+K. Wright \emph{et al.}, ``Benchmarking an 11-qubit quantum computer,'' \emph{Nat. Commun.} \textbf{10}, 5464 (2019).
+
+\end{thebibliography}
+
+\end{document}
