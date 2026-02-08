@@ -35,8 +35,8 @@ TOPOLOGIES = {
     }
 }
 
-TOKEN = "cT8474Ek6aCULL-qpYMSOHRMLvA-zM1RlDUc4cYmqlH7"
-CRN = "crn:v1:bluemix:public:quantum-computing:us-east:a/035af0b83a3746e7a2e291a5cda4a487:3157ad22-5763-4376-97c4-9aae94d3d930::"
+TOKEN = "XXXXX"
+CRN = "XXXXX"
 
 def get_backend():
     print("Connecting to IBM Quantum...")
@@ -284,3 +284,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
