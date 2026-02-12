@@ -2,7 +2,7 @@
 
 [![arXiv](https://img.shields.io/badge/arXiv-2602.XXXXX-b31b1b.svg)](https://arxiv.org/abs/2602.XXXXX)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
-[![DOI](https://img.shields.io/badge/DOI-10.XXXX-blue.svg)](https://doi.org/10.5281/zenodo.18625124)
+[![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.18625124-blue.svg)](https://doi.org/10.5281/zenodo.18625124)
 
 **Experimental investigation of spatially inhomogeneous decoherence in 6-qubit GHZ states on IBM Quantum hardware**
 
